@@ -48,11 +48,10 @@ def create_menu(choices):
     for i, choice in enumerate(choices):
         line = str(i + 1) + ". "
 
-        name = choice["name"]
         foundShortcut = False
-        for letter in name:
+        for letter in choice:
             if not foundShortcut and letter.lower() not in shortcuts:
-                shortcuts[letter.lower()] = choice
+                shortcuts[letter.lower()] = i
                 foundShortcut = True
                 line += ASCII.UNDERLINE + letter + ASCII.RESET
             else:
@@ -60,78 +59,73 @@ def create_menu(choices):
 
         print(line)
 
-    success = False
-    while not success:
+    while True:
         inpt = input("\n> ").lower()
         if inpt.isnumeric():
             try:
                 choiceIndex = int(inpt) - 1
                 if len(choices) <= choiceIndex or choiceIndex < 0:
                     raise Exception("Not valid choice")
-                success = True
             except:
                 pass
-
-            if success:
-                if choices[choiceIndex]["action"] != None:
-                    choices[choiceIndex]["action"]()
-                break
+            else:
+                return choiceIndex
 
         for shortcut, choice in shortcuts.items():
             if shortcut == inpt:
-                if choice["action"] != None:
-                    choice["action"]()
-                success = True
-                break
+                return choice
 
-        for choice in choices:
-            if choice["name"].lower() == inpt:
-                if choice["action"] != None:
-                    choice["action"]()
-                success = True
-                break
+        for i, choice in enumerate(choices):
+            if choice.lower() == inpt:
+                return i
 
-        if not success:
-            print(
-                ASCII.RED
-                + "Invalid input. To select a choice please enter the\nfull name, corresponding number, or underlined shortcut"
-                + ASCII.RESET
-            )
+        print(
+            ASCII.RED
+            + "Invalid input. To select a choice please enter the\nfull name, corresponding number, or underlined shortcut"
+            + ASCII.RESET
+        )
 
 
 def main_menu():
-    # https://patorjk.com/software/taag/#p=display&f=Tmplr&t=Hangman
-    print(
-        """┓┏ ___________ 
+    while True:
+        # https://patorjk.com/software/taag/#p=display&f=Tmplr&t=Hangman
+        print(
+            """┓┏ ___________ 
 ┣┫┏┓┏┓┏┓┏┳┓┏┓┏┓
 ┛┗┗┻┛┗┗┫┛┗┗┗┻┛┗
        ┛"""
-    )
+        )
 
-    create_menu(
-        [
-            {"name": "Play", "action": playGame},
-            {"name": "Options", "action": options_menu},
-            {"name": "Exit", "action": None},
-        ]
-    )
+        choice = create_menu(["Play", "Options", "Exit"])
+
+        if choice == 0:
+            play()
+        elif choice == 1:
+            options_menu()
+        else:
+            exit()
+
+        printSeperator()
 
 
 def options_menu(): ...
 
 
-def playagain_menu():
-    def back():
-        printSeperator()
-        main_menu()
+def categories_menu(): ...
 
-    create_menu(
-        [
-            {"name": "Play Again", "action": playGame},
-            {"name": "Categories", "action": None},
-            {"name": "Back", "action": back},
-        ]
-    )
+
+def play():
+    choice = 0
+    while True:
+        if choice == 0:
+            playGame()
+        elif choice == 1:
+            categories_menu()
+            playGame()
+        else:
+            break
+
+        choice = create_menu(["Play Again", "Categories", "Back"])
 
 
 def playGame():
@@ -232,11 +226,8 @@ def playGame():
         print(f"You {ASCII.RED}lost{ASCII.RESET}")
     print(f"The word was {ASCII.UNDERLINE}{word}{ASCII.RESET}\n")
 
-    playagain_menu()
-
 
 def main():
-    # minor amounts of stack overflowing is possible
     if SCREEN_CLEARING:
         system("cls")
     main_menu()
