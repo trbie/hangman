@@ -9,8 +9,108 @@ import string
 
 LETTERS = string.ascii_lowercase
 WORDS = {
-    "FRUITS": ["Apple", "Banana", "Orange"],
-    "ANIMALS": ["Armadillo", "Beaver", "Cat", "Dog"],
+    "Fruits": [
+        "Apple",
+        "Banana",
+        "Orange",
+        "Grape",
+        "Strawberry",
+        "Watermelon",
+        "Pineapple",
+        "Mango",
+        "Kiwi",
+        "Peach",
+        "Pear",
+        "Cherry",
+        "Plum",
+        "Blueberry",
+        "Raspberry",
+    ],
+    "Animals": [
+        "Elephant",
+        "Tiger",
+        "Lion",
+        "Giraffe",
+        "Monkey",
+        "Zebra",
+        "Kangaroo",
+        "Hippo",
+        "Rhino",
+        "Panda",
+        "Leopard",
+        "Crocodile",
+        "Gorilla",
+        "Koala",
+        "Squirrel",
+    ],
+    "Countries": [
+        "United States",
+        "Canada",
+        "Brazil",
+        "India",
+        "China",
+        "Russia",
+        "Germany",
+        "Japan",
+        "Australia",
+        "Mexico",
+        "France",
+        "United Kingdom",
+        "Italy",
+        "Spain",
+        "South Korea",
+    ],
+    "Sports": [
+        "Football",
+        "Basketball",
+        "Soccer",
+        "Tennis",
+        "Golf",
+        "Cricket",
+        "Rugby",
+        "Baseball",
+        "Hockey",
+        "Volleyball",
+        "Swimming",
+        "Boxing",
+        "Cycling",
+        "Running",
+        "Wrestling",
+    ],
+    "Professions": [
+        "Doctor",
+        "Teacher",
+        "Engineer",
+        "Artist",
+        "Lawyer",
+        "Chef",
+        "Pilot",
+        "Nurse",
+        "Firefighter",
+        "Police Officer",
+        "Scientist",
+        "Architect",
+        "Writer",
+        "Musician",
+        "Athlete",
+    ],
+    "Transportation": [
+        "Car",
+        "Bus",
+        "Train",
+        "Bicycle",
+        "Motorcycle",
+        "Airplane",
+        "Boat",
+        "Helicopter",
+        "Truck",
+        "Subway",
+        "Taxi",
+        "Ferry",
+        "Scooter",
+        "Van",
+        "Jet",
+    ],
 }
 
 
@@ -30,6 +130,7 @@ TOTAL_HINTS = 2
 HINT_THRESHOLD = 2
 
 game_history = [{"word": "Apple", "guesses": "abc?de"}]
+category = ""
 
 
 def printSeperator():
@@ -111,16 +212,37 @@ def main_menu():
 def options_menu(): ...
 
 
-def categories_menu(): ...
+def categories_menu():
+    global category
+
+    choices = list(WORDS)
+    choices.insert(0, "All")
+    choices.append("Back")
+
+    printSeperator()
+    print("Select a category\n")
+    choice = create_menu(choices)
+
+    if choice == 0:
+        category = ""
+    elif choice == len(WORDS) + 1:
+        return False
+    else:
+        category = list(WORDS)[choice - 1]
+
+    return True
 
 
 def play():
-    choice = 0
+    choice = 1
     while True:
         if choice == 0:
             playGame()
         elif choice == 1:
-            categories_menu()
+            categorySelected = categories_menu()
+            if not categorySelected:
+                break
+
             playGame()
         else:
             break
@@ -129,7 +251,12 @@ def play():
 
 
 def playGame():
-    word = random.choice(WORDS["ANIMALS"]).lower()
+    cat = category
+    if cat == "":
+        cat = random.choice(list(WORDS))
+
+    word = random.choice(WORDS[cat]).lower()
+
     guess_history = ""
     guesses = TOTAL_GUESSES
     hints = TOTAL_HINTS
@@ -169,6 +296,7 @@ def playGame():
             if i % 10 == 9:
                 board += "\n"
 
+        print(f"The category is {cat}\n")
         print(board + "\n")
 
         if hints < TOTAL_HINTS and guess_history[-2] == "?":
@@ -189,7 +317,7 @@ def playGame():
                 error = None
 
             inpt = input("\n> ").lower()
-            if len(inpt) > 1:
+            if len(inpt) != 1:
                 error = f"Please enter a single letter{' or a question mark' if guesses <= HINT_THRESHOLD else ''}"
                 continue
             elif inpt == "?":
