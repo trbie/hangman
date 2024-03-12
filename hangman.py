@@ -213,6 +213,9 @@ def playGame():
             elif inpt in guess_history:
                 error = "That letter has already been guessed"
                 continue
+            elif inpt not in LETTERS:
+                error = "That is not a valid letter"
+                continue
             else:
                 guess_history += inpt
 
