@@ -7,6 +7,7 @@ from os import system
 import random
 import string
 
+### Constants
 LETTERS = string.ascii_lowercase
 WORDS = {
     "Fruits": [
@@ -123,18 +124,22 @@ class ASCII:
     YELLOW = "\033[33m"
 
 
-SCREEN_CLEARING = True
-
-TOTAL_GUESSES = 8
-TOTAL_HINTS = 2
-HINT_THRESHOLD = 2
+### Game Data
+options = {
+    "Guesses": 8,
+    "Hints": 2,
+    "Hint Threshold": 2,
+    "Screen Clearing": False,
+    "Show Category": True,
+}
 
 game_history = [{"word": "Apple", "guesses": "abc?de"}]
 category = ""
 
 
+### Utility Methods
 def printSeperator():
-    if SCREEN_CLEARING:
+    if options["Screen Clearing"]:
         system("cls")
     else:
         print("\n" + "=" * 25 + "\n")
@@ -145,9 +150,13 @@ def singPlur(base, value, pluralSuffix="s", singularSuffix=""):
 
 
 def create_menu(choices):
+    if len(choices) < 1:
+        return -1
+
     shortcuts = {}
+    width = len(str(len(choices)))
     for i, choice in enumerate(choices):
-        line = str(i + 1) + ". "
+        line = str(i + 1).rjust(width) + ". "
 
         foundShortcut = False
         for letter in choice:
@@ -187,6 +196,7 @@ def create_menu(choices):
         )
 
 
+### Menus
 def main_menu():
     while True:
         # https://patorjk.com/software/taag/#p=display&f=Tmplr&t=Hangman
@@ -209,7 +219,64 @@ def main_menu():
         printSeperator()
 
 
-def options_menu(): ...
+def options_menu():
+    global options
+
+    def option_string(name, value):
+        choice = name + " [" + ASCII.YELLOW
+        if type(value) == bool:
+            choice += "X" if value else " "
+        else:
+            choice += str(value)
+
+        return choice + ASCII.RESET + "]"
+
+    choices = []
+    for name, value in options.items():
+        choices.append(option_string(name, value))
+    choices.append("Back")
+
+    while True:
+        printSeperator()
+
+        print("Select an option to change\n")
+
+        choice = create_menu(choices)
+
+        if choice < len(options) and choice > -1:
+            optionName = list(options)[choice]
+            optionValue = options[optionName]
+
+            if type(optionValue) == bool:
+                print(optionName)
+                optionValue = not optionValue
+
+            elif type(optionValue) == int:
+                print(
+                    "\nEnter a new value for " + ASCII.YELLOW + optionName + ASCII.RESET
+                )
+
+                while True:
+                    inpt = input("> ")
+
+                    if inpt.isnumeric():
+                        try:
+                            optionValue = int(inpt)
+                            break
+                        except:
+                            pass
+
+                    print(
+                        ASCII.RED
+                        + "\nPlease enter a non-negative whole number"
+                        + ASCII.RESET
+                    )
+
+            options[optionName] = optionValue
+            choices[choice] = option_string(optionName, optionValue)
+
+        else:
+            break
 
 
 def categories_menu():
@@ -250,6 +317,7 @@ def play():
         choice = create_menu(["Play Again", "Categories", "Back"])
 
 
+### Core Game
 def playGame():
     cat = category
     if cat == "":
@@ -258,8 +326,8 @@ def playGame():
     word = random.choice(WORDS[cat]).lower()
 
     guess_history = ""
-    guesses = TOTAL_GUESSES
-    hints = TOTAL_HINTS
+    guesses = options["Guesses"]
+    hints = options["Hints"]
     error = None
 
     while True:
@@ -296,10 +364,11 @@ def playGame():
             if i % 10 == 9:
                 board += "\n"
 
-        print(f"The category is {cat}\n")
+        if options["Show Category"]:
+            print(f"The category is {cat}\n")
         print(board + "\n")
 
-        if hints < TOTAL_HINTS and guess_history[-2] == "?":
+        if hints < options["Hints"] and guess_history[-2] == "?":
             print(
                 ASCII.YELLOW
                 + f"A hint was used and revealed the letter '{guess_history[-1]}'"
@@ -309,7 +378,7 @@ def playGame():
         if not won and guesses > 0:
             print(f"You have {guesses} {singPlur('guess', guesses, 'es')} left")
 
-            if guesses <= HINT_THRESHOLD:
+            if guesses <= options["Hint Threshold"] and hints > 0:
                 print(f"You have {hints} {singPlur('hint', hints)} (?) left")
 
             if error != None:
@@ -318,10 +387,13 @@ def playGame():
 
             inpt = input("\n> ").lower()
             if len(inpt) != 1:
-                error = f"Please enter a single letter{' or a question mark' if guesses <= HINT_THRESHOLD else ''}"
+                error = f"Please enter a single letter{' or a question mark' if guesses <= options['Hint Threshold'] and hints > 0 else ''}"
                 continue
             elif inpt == "?":
-                if guesses <= HINT_THRESHOLD:
+                if hints < 1:
+                    error = "You have no more hints left"
+                    continue
+                elif guesses <= options["Hint Threshold"]:
                     possibleHints = []
                     for letter in word:
                         if letter not in possibleHints and letter not in guess_history:
@@ -330,7 +402,7 @@ def playGame():
                     guess_history += "?" + random.choice(possibleHints)
                     hints -= 1
                 else:
-                    error = f"Hints are not available until there are only {HINT_THRESHOLD} {singPlur('guess', guesses, 'es')} left"
+                    error = f"Hints are not available until there are only {options['Hint Threshold']} {singPlur('guess', guesses, 'es')} left"
                     continue
             elif inpt in guess_history:
                 error = "That letter has already been guessed"
@@ -348,7 +420,7 @@ def playGame():
 
     if won:
         print(
-            f"You {ASCII.GREEN}won{ASCII.RESET} with {TOTAL_GUESSES - guesses} {singPlur('guess', TOTAL_GUESSES - guesses, 'es')} and {TOTAL_HINTS - hints} {singPlur('hint', TOTAL_HINTS - hints)}"
+            f"You {ASCII.GREEN}won{ASCII.RESET} with {options['Guesses'] - guesses} {singPlur('guess', options['Guesses'] - guesses, 'es')} and {options['Hints'] - hints} {singPlur('hint', options['Hints'] - hints)}"
         )
     else:
         print(f"You {ASCII.RED}lost{ASCII.RESET}")
@@ -356,7 +428,7 @@ def playGame():
 
 
 def main():
-    if SCREEN_CLEARING:
+    if options["Screen Clearing"]:
         system("cls")
     main_menu()
     print("\nThank you for playing")
