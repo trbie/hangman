@@ -158,8 +158,12 @@ def create_menu(choices):
     for i, choice in enumerate(choices):
         line = str(i + 1).rjust(width) + ". "
 
+        selector = choice
+        if type(choice) == list:
+            selector = choice[0]
+
         foundShortcut = False
-        for letter in choice:
+        for letter in selector:
             if not foundShortcut and letter.lower() not in shortcuts:
                 shortcuts[letter.lower()] = i
                 foundShortcut = True
@@ -167,10 +171,13 @@ def create_menu(choices):
             else:
                 line += letter
 
+        if type(choice) == list:
+            line += choice[1]
+
         print(line)
 
     while True:
-        inpt = input("\n> ").lower()
+        inpt = input("\n> ").lower().strip()
         if inpt.isnumeric():
             try:
                 choiceIndex = int(inpt) - 1
@@ -186,6 +193,9 @@ def create_menu(choices):
                 return choice
 
         for i, choice in enumerate(choices):
+            if type(choice) == list:
+                choice = choice[0]
+
             if choice.lower() == inpt:
                 return i
 
@@ -222,18 +232,18 @@ def main_menu():
 def options_menu():
     global options
 
-    def option_string(name, value):
-        choice = name + " [" + ASCII.YELLOW
+    def valueToString(value):
+        result = " [" + ASCII.YELLOW
         if type(value) == bool:
-            choice += "X" if value else " "
+            result += "X" if value else " "
         else:
-            choice += str(value)
+            result += str(value)
 
-        return choice + ASCII.RESET + "]"
+        return result + ASCII.RESET + "]"
 
     choices = []
     for name, value in options.items():
-        choices.append(option_string(name, value))
+        choices.append([name, valueToString(value)])
     choices.append("Back")
 
     while True:
@@ -273,7 +283,7 @@ def options_menu():
                     )
 
             options[optionName] = optionValue
-            choices[choice] = option_string(optionName, optionValue)
+            choices[choice][1] = valueToString(optionValue)
 
         else:
             break

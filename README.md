@@ -10,4 +10,6 @@ Made with Python 3.11.4 as a final project for my Python class
 -   [x] Add new words and categories with menu
 -   [ ] Auto-fill special characters like - and é
 -   [ ] Revealed word should match original casing
--   [ ] Give menu both display text and selector text
+-   [x] Give menu both display text and selector text
+-   [ ] More words
+-   [ ] Save data/settings to external file
