@@ -130,9 +130,9 @@ options = {
     "Guesses": 8,
     "Hints": 2,
     "Hint Threshold": 2,
-    "Screen Clearing": False,
     "Show Category": True,
     "Show Wins": True,
+    "Screen Clearing": False,
 }
 
 ## Game History
@@ -297,7 +297,7 @@ def main_menu():
         elif choice == 2:
             options_menu()
         else:
-            exit()
+            break
 
         printSeperator()
 
@@ -615,8 +615,8 @@ def playGame():
 
 
 def main():
-    if options["Screen Clearing"]:
-        system("cls")
+    system("cls")
+
     main_menu()
     print("\nThank you for playing")
 
