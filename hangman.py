@@ -160,10 +160,13 @@ def singPlur(base, value, pluralSuffix="s", singularSuffix=""):
 def game_summary(game, withUnderline=True):
     word = game[0]
     guesses = game[1]
+    underline = ASCII.UNDERLINE if withUnderline else ""
 
-    line = ASCII.UNDERLINE if withUnderline else ""
+    line = underline
     for letter in word:
-        if letter.lower() not in guesses:
+        if letter.lower() not in LETTERS:
+            line += ASCII.RESET + underline
+        elif letter.lower() not in guesses:
             line += ASCII.RED
         else:
             index = guesses.find(letter)
@@ -507,8 +510,8 @@ def playGame():
 
         won = True
         for letter in word:
-            if letter.lower() in guess_history:
-                if letter.lower() == guess_history[-1]:
+            if letter.lower() in guess_history or letter.lower() not in LETTERS:
+                if len(guess_history) > 0 and letter.lower() == guess_history[-1]:
                     board += ASCII.BLUE + letter + ASCII.RESET
                 else:
                     board += letter
@@ -563,7 +566,7 @@ def playGame():
                 print(ASCII.RED + error + ASCII.RESET)
                 error = None
 
-            inpt = input("\n> ").lower()
+            inpt = input("\n> ").lower().strip()
             if len(inpt) != 1:
                 error = f"Please enter a single letter{' or a question mark' if guesses <= options['Hint Threshold'] and hints > 0 else ''}"
                 continue
