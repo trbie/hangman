@@ -13,6 +13,6 @@ Made with Python 3.11.4 as a final project for my Python class
 -   [x] Give menu both display text and selector text
 -   [ ] More words
 -   [ ] Save data/settings to external file
--   [ ] Multi OS console clearing
+-   [x] Multi OS console clearing
 -   [x] Consistent colors
 -   [ ] Remove word after it has been played

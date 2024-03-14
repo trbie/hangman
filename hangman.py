@@ -3,7 +3,7 @@
 # DEV108
 # Final Project: Hangman
 
-from os import system
+import os
 import random
 import string
 
@@ -146,9 +146,19 @@ category = ""
 
 
 ### Utility Methods
+def clearScreen():
+    # Windows
+    if os.name == "nt":
+        os.system("cls")
+
+    # Linux/Mac
+    else:
+        os.system("clear")
+
+
 def printSeperator():
     if options["Screen Clearing"]:
-        system("cls")
+        clearScreen()
     else:
         print("\n" + "=" * 25 + "\n")
 
@@ -615,7 +625,7 @@ def playGame():
 
 
 def main():
-    system("cls")
+    clearScreen()
 
     main_menu()
     print("\nThank you for playing")
