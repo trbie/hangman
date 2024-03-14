@@ -131,9 +131,16 @@ options = {
     "Hint Threshold": 2,
     "Screen Clearing": False,
     "Show Category": True,
+    "Show Wins": True,
 }
 
-game_history = [{"word": "Apple", "guesses": "abc?de"}]
+## Game History
+# 0 - word
+# 1 - guesses
+# 2 - total guesses
+# 3 - total hints
+game_history = []
+wins = 0
 category = ""
 
 
@@ -147,6 +154,64 @@ def printSeperator():
 
 def singPlur(base, value, pluralSuffix="s", singularSuffix=""):
     return base + (pluralSuffix if value != 1 else singularSuffix)
+
+
+def game_summary(game, withUnderline=True):
+    word = game[0]
+    guesses = game[1]
+
+    line = ASCII.UNDERLINE if withUnderline else ""
+    for letter in word:
+        if letter.lower() not in guesses:
+            line += ASCII.RED
+        else:
+            index = guesses.find(letter)
+            if index > 0 and guesses[index - 1] == "?":
+                line += ASCII.YELLOW
+            else:
+                line += ASCII.GREEN
+
+        line += letter
+    line += ASCII.RESET
+
+    return line
+
+
+def print_game_details(game):
+    word = game[0]
+    guesses = game[1]
+    total_guesses = game[2]
+    total_hints = game[3]
+
+    print(game_summary(game))
+
+    numberLine = ""
+    guessLine = ""
+    guesses_used = 0
+    hints_used = 0
+    for i, letter in enumerate(guesses):
+        if letter == "?":
+            hints_used += 1
+            continue
+
+        if i > 0 and guesses[i - 1] == "?":
+            guessLine += ASCII.YELLOW
+        elif letter in word.lower():
+            guessLine += ASCII.GREEN
+        else:
+            guessLine += ASCII.RED
+            guesses_used += 1
+
+        num = str(i - hints_used + 1) + " "
+        numberLine += num
+        guessLine += letter.ljust(len(num))
+    guessLine += ASCII.RESET
+
+    print("\n" + numberLine)
+    print(guessLine)
+
+    print(f"\nGuesses Used: {ASCII.RED}{guesses_used}{ASCII.RESET}/{total_guesses}")
+    print(f"Hints Used: {ASCII.YELLOW}{hints_used}{ASCII.RESET}/{total_hints}")
 
 
 def create_menu(choices):
@@ -217,11 +282,13 @@ def main_menu():
        ┛"""
         )
 
-        choice = create_menu(["Play", "Options", "Exit"])
+        choice = create_menu(["Play", "Game History", "Options", "Exit"])
 
         if choice == 0:
             play()
         elif choice == 1:
+            history_menu()
+        elif choice == 2:
             options_menu()
         else:
             exit()
@@ -310,6 +377,94 @@ def categories_menu():
     return True
 
 
+def history_menu():
+    global game_history
+
+    while True:
+        printSeperator()
+
+        print("Game History\n")
+
+        if len(game_history) < 1:
+            print(ASCII.YELLOW + "You have no games to view" + ASCII.RESET)
+            input(f"\nPress {ASCII.YELLOW}Enter{ASCII.RESET} to go back ")
+            break
+
+        padding = len(str(len(game_history)))
+        for i, game in enumerate(game_history):
+            line = str(i + 1).rjust(padding) + " "
+            line += game_summary(game, False)
+            print(line)
+
+        print()
+        choice = create_menu(["Show Details", "Show All Details", "Clear All", "Back"])
+
+        if choice == 0:
+            print("\nEnter a game number to show its details")
+            while True:
+                inpt = input("> ")
+
+                if inpt.isnumeric():
+                    try:
+                        gameId = int(inpt) - 1
+                        if 0 <= gameId and gameId < len(game_history):
+                            break
+                    except:
+                        pass
+
+                print(
+                    ASCII.RED
+                    + f"\nPlease enter a whole number from 1 to {len(game_history)}"
+                    + ASCII.RESET
+                )
+
+            history_details_menu(gameId)
+        elif choice == 1:
+            printSeperator()
+            print("Detailed Game History\n")
+            for i, game in enumerate(game_history):
+                print(f"----- Game {i + 1} -----")
+                print_game_details(game)
+                if i == len(game_history) - 1:
+                    print(f"-------------------\n")
+                else:
+                    print()
+
+            input(f"Press {ASCII.YELLOW}Enter{ASCII.RESET} to go back ")
+        elif choice == 2:
+            print(
+                f"\nAre you sure you want to {ASCII.RED}permanently delete{ASCII.RESET} all game history?"
+            )
+            choice = create_menu(["Yes", "No"])
+            if choice == 0:
+                game_history = []
+        else:
+            break
+
+
+def history_details_menu(index):
+    while True:
+        printSeperator()
+        print(f"Game {index + 1}\n")
+        print_game_details(game_history[index])
+        print()
+
+        choices = []
+        if index < len(game_history) - 1:
+            choices.append("Next")
+        if index > 0:
+            choices.append("Previous")
+        choices.append("Back")
+
+        choice = create_menu(choices)
+        if choice < 0 or choice >= len(choices) - 1:
+            break
+        elif choices[choice] == "Next":
+            index += 1
+        else:
+            index -= 1
+
+
 def play():
     choice = 1
     while True:
@@ -329,6 +484,9 @@ def play():
 
 ### Core Game
 def playGame():
+    global game_history
+    global wins
+
     cat = category
     if cat == "":
         cat = random.choice(list(WORDS))
@@ -432,9 +590,15 @@ def playGame():
         print(
             f"You {ASCII.GREEN}won{ASCII.RESET} with {options['Guesses'] - guesses} {singPlur('guess', options['Guesses'] - guesses, 'es')} and {options['Hints'] - hints} {singPlur('hint', options['Hints'] - hints)}"
         )
+        wins += 1
     else:
         print(f"You {ASCII.RED}lost{ASCII.RESET}")
     print(f"The word was {ASCII.UNDERLINE}{word}{ASCII.RESET}\n")
+
+    game_history.append([word, guess_history, options["Guesses"], options["Hints"]])
+
+    if options["Show Wins"]:
+        print(f"You have won {wins}/{len(game_history)} games\n")
 
 
 def main():
