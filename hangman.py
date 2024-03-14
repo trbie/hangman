@@ -491,7 +491,7 @@ def playGame():
     if cat == "":
         cat = random.choice(list(WORDS))
 
-    word = random.choice(WORDS[cat]).lower()
+    word = random.choice(WORDS[cat])
 
     guess_history = ""
     guesses = options["Guesses"]
@@ -504,8 +504,8 @@ def playGame():
 
         won = True
         for letter in word:
-            if letter in guess_history:
-                if letter == guess_history[-1]:
+            if letter.lower() in guess_history:
+                if letter.lower() == guess_history[-1]:
                     board += ASCII.YELLOW + letter + ASCII.RESET
                 else:
                     board += letter
@@ -516,7 +516,7 @@ def playGame():
         board += "\n\n"
         for i, letter in enumerate(LETTERS):
             wasGuessed = letter in guess_history
-            isInWord = letter in word
+            isInWord = letter in word.lower()
 
             if len(guess_history) > 0 and letter == guess_history[-1]:
                 board += ASCII.YELLOW
@@ -563,7 +563,7 @@ def playGame():
                     continue
                 elif guesses <= options["Hint Threshold"]:
                     possibleHints = []
-                    for letter in word:
+                    for letter in word.lower():
                         if letter not in possibleHints and letter not in guess_history:
                             possibleHints.append(letter)
 
@@ -581,7 +581,7 @@ def playGame():
             else:
                 guess_history += inpt
 
-                if inpt not in word:
+                if inpt not in word.lower():
                     guesses -= 1
         else:
             break
