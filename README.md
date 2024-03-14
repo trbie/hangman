@@ -14,5 +14,5 @@ Made with Python 3.11.4 as a final project for my Python class
 -   [ ] More words
 -   [ ] Save data/settings to external file
 -   [ ] Multi OS console clearing
--   [ ] Consistent colors
+-   [x] Consistent colors
 -   [ ] Remove word after it has been played

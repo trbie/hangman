@@ -122,6 +122,7 @@ class ASCII:
     RED = "\033[31m"
     GREEN = "\033[32m"
     YELLOW = "\033[33m"
+    BLUE = "\033[36m"
 
 
 ### Game Data
@@ -276,10 +277,12 @@ def main_menu():
     while True:
         # https://patorjk.com/software/taag/#p=display&f=Tmplr&t=Hangman
         print(
-            """┓┏ ___________ 
+            ASCII.BLUE
+            + """┓┏ ___________ 
 ┣┫┏┓┏┓┏┓┏┳┓┏┓┏┓
 ┛┗┗┻┛┗┗┫┛┗┗┗┻┛┗
        ┛"""
+            + ASCII.RESET
         )
 
         choice = create_menu(["Play", "Game History", "Options", "Exit"])
@@ -300,7 +303,7 @@ def options_menu():
     global options
 
     def valueToString(value):
-        result = " [" + ASCII.YELLOW
+        result = " [" + ASCII.BLUE
         if type(value) == bool:
             result += "X" if value else " "
         else:
@@ -330,7 +333,7 @@ def options_menu():
 
             elif type(optionValue) == int:
                 print(
-                    "\nEnter a new value for " + ASCII.YELLOW + optionName + ASCII.RESET
+                    "\nEnter a new value for " + ASCII.BLUE + optionName + ASCII.RESET
                 )
 
                 while True:
@@ -387,7 +390,7 @@ def history_menu():
 
         if len(game_history) < 1:
             print(ASCII.YELLOW + "You have no games to view" + ASCII.RESET)
-            input(f"\nPress {ASCII.YELLOW}Enter{ASCII.RESET} to go back ")
+            input(f"\nPress {ASCII.BLUE}Enter{ASCII.RESET} to go back ")
             break
 
         padding = len(str(len(game_history)))
@@ -430,7 +433,7 @@ def history_menu():
                 else:
                     print()
 
-            input(f"Press {ASCII.YELLOW}Enter{ASCII.RESET} to go back ")
+            input(f"Press {ASCII.BLUE}Enter{ASCII.RESET} to go back ")
         elif choice == 2:
             print(
                 f"\nAre you sure you want to {ASCII.RED}permanently delete{ASCII.RESET} all game history?"
@@ -506,7 +509,7 @@ def playGame():
         for letter in word:
             if letter.lower() in guess_history:
                 if letter.lower() == guess_history[-1]:
-                    board += ASCII.YELLOW + letter + ASCII.RESET
+                    board += ASCII.BLUE + letter + ASCII.RESET
                 else:
                     board += letter
             else:
@@ -517,11 +520,18 @@ def playGame():
         for i, letter in enumerate(LETTERS):
             wasGuessed = letter in guess_history
             isInWord = letter in word.lower()
+            isHint = (
+                len(guess_history) > 1
+                and guess_history[guess_history.find(letter) - 1] == "?"
+            )
 
             if len(guess_history) > 0 and letter == guess_history[-1]:
-                board += ASCII.YELLOW
+                board += ASCII.BLUE
             elif wasGuessed and isInWord:
-                board += ASCII.GREEN
+                if isHint:
+                    board += ASCII.YELLOW
+                else:
+                    board += ASCII.GREEN
             elif wasGuessed:
                 board += ASCII.RED
             else:
