@@ -113,6 +113,7 @@ WORDS = {
         "Jet",
     ],
 }
+PLAYED_WORDS = {}
 
 
 class ASCII:
@@ -161,6 +162,44 @@ def printSeperator():
         clearScreen()
     else:
         print("\n" + "=" * 25 + "\n")
+
+
+def getWord():
+    global WORDS
+    global PLAYED_WORDS
+
+    if category == "":
+        noWordsLeft = True
+        for cat in WORDS:
+            if len(WORDS[cat]) > 0:
+                noWordsLeft = False
+
+        if noWordsLeft:
+            for cat, words in PLAYED_WORDS.items():
+                WORDS[cat] = words
+            PLAYED_WORDS = {}
+
+    elif category != "" and len(WORDS[category]) < 1:
+        WORDS[category] = PLAYED_WORDS[category]
+        del PLAYED_WORDS[category]
+
+    cat = category
+    if cat == "":
+        choices = []
+        for key, words in WORDS.items():
+            if len(words) > 0:
+                choices.append(key)
+        cat = random.choice(choices)
+
+    i = random.randint(0, len(WORDS[cat]) - 1)
+    word = WORDS[cat].pop(i)
+
+    if cat not in PLAYED_WORDS:
+        PLAYED_WORDS[cat] = [word]
+    else:
+        PLAYED_WORDS[cat].append(word)
+
+    return [word, cat]
 
 
 def singPlur(base, value, pluralSuffix="s", singularSuffix=""):
@@ -375,7 +414,9 @@ def options_menu():
 def categories_menu():
     global category
 
-    choices = list(WORDS)
+    categories = sorted(list(WORDS))
+
+    choices = categories.copy()
     choices.insert(0, "All")
     choices.append("Back")
 
@@ -385,10 +426,10 @@ def categories_menu():
 
     if choice == 0:
         category = ""
-    elif choice == len(WORDS) + 1:
+    elif choice == len(categories) + 1:
         return False
     else:
-        category = list(WORDS)[choice - 1]
+        category = categories[choice - 1]
 
     return True
 
@@ -503,11 +544,7 @@ def playGame():
     global game_history
     global wins
 
-    cat = category
-    if cat == "":
-        cat = random.choice(list(WORDS))
-
-    word = random.choice(WORDS[cat])
+    [word, cat] = getWord()
 
     guess_history = ""
     guesses = options["Guesses"]

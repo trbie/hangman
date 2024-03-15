@@ -15,4 +15,4 @@ Made with Python 3.11.4 as a final project for my Python class
 -   [ ] Save data/settings to external file
 -   [x] Multi OS console clearing
 -   [x] Consistent colors
--   [ ] Remove word after it has been played
+-   [x] Remove word after it has been played
