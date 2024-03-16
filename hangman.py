@@ -6,6 +6,7 @@
 import os
 import random
 import string
+import urllib.request
 
 ### Constants
 LETTERS = string.ascii_lowercase
@@ -115,6 +116,21 @@ WORDS = {
 }
 PLAYED_WORDS = {}
 
+EXTERNAL_WORDS = {
+    "MIT": {
+        "source": "https://www.mit.edu/~ecprice/wordlist.10000",
+        "note": "10,000 words",
+    },
+    "UMich": {
+        "source": "https://websites.umich.edu/~jlawler/wordlist",
+        "note": "70,000 words",
+    },
+    "dwyl": {
+        "source": "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt",
+        "note": "370,000 words",
+    },
+}
+
 
 class ASCII:
     RESET = "\033[0m"
@@ -144,6 +160,7 @@ options = {
 game_history = []
 wins = 0
 category = ""
+externalCategory = False
 
 
 ### Utility Methods
@@ -167,6 +184,13 @@ def printSeperator():
 def getWord():
     global WORDS
     global PLAYED_WORDS
+
+    if externalCategory:
+        word = ""
+        while len(word) < 3:
+            word = random.choice(EXTERNAL_WORDS[category]["words"])
+
+        return [word, category]
 
     if category == "":
         noWordsLeft = True
@@ -200,6 +224,23 @@ def getWord():
         PLAYED_WORDS[cat].append(word)
 
     return [word, cat]
+
+
+def loadSource():
+    global EXTERNAL_WORDS
+
+    try:
+        EXTERNAL_WORDS[category]["words"] = []
+
+        for line in urllib.request.urlopen(EXTERNAL_WORDS[category]["source"]):
+            word = line.decode("utf-8").strip()
+            if word != "":
+                EXTERNAL_WORDS[category]["words"].append(word)
+    except:
+        del EXTERNAL_WORDS[category]["words"]
+        return False
+    else:
+        return True
 
 
 def singPlur(base, value, pluralSuffix="s", singularSuffix=""):
@@ -413,25 +454,73 @@ def options_menu():
 
 def categories_menu():
     global category
+    global externalCategory
 
     categories = sorted(list(WORDS))
 
     choices = categories.copy()
     choices.insert(0, "All")
+    choices.append("Uncategorized")
     choices.append("Back")
 
-    printSeperator()
-    print("Select a category\n")
-    choice = create_menu(choices)
+    while True:
+        printSeperator()
+        print("Select a category\n")
+        choice = create_menu(choices)
 
-    if choice == 0:
-        category = ""
-    elif choice == len(categories) + 1:
-        return False
-    else:
-        category = categories[choice - 1]
+        if choice == 0:
+            externalCategory = False
+            category = ""
+        elif choice == len(categories) + 1:
+            selected = external_categories_menu()
+            if not selected:
+                continue
+        elif choice == len(categories) + 2:
+            return False
+        else:
+            externalCategory = False
+            category = categories[choice - 1]
 
-    return True
+        return True
+
+
+def external_categories_menu():
+    global category
+    global externalCategory
+
+    choices = []
+    for name, data in EXTERNAL_WORDS.items():
+        note = ASCII.DIM + f" ({data['note']})" + ASCII.RESET
+        choices.append([name, note])
+    choices.append("Back")
+
+    error = None
+    while True:
+        printSeperator()
+
+        if error != None:
+            print(ASCII.RED + error + ASCII.RESET + "\n")
+            error = None
+
+        print("Select a word list\n")
+
+        choice = create_menu(choices)
+
+        if choice == len(EXTERNAL_WORDS):
+            return False
+        else:
+            externalCategory = True
+            category = list(EXTERNAL_WORDS)[choice]
+
+            if "words" not in EXTERNAL_WORDS[category]:
+                print(ASCII.YELLOW + f"\nLoading {category} word list..." + ASCII.RESET)
+                success = loadSource()
+
+                if not success:
+                    error = f"Failed to load word list from '{EXTERNAL_WORDS[category]['source']}'\nPlease select another list or try again later"
+                    continue
+
+            return True
 
 
 def history_menu():
