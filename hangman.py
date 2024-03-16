@@ -755,9 +755,55 @@ def playGame():
 
 
 def main():
+    global game_history
+    global options
+
     clearScreen()
 
+    if os.path.exists("hangman.data") and os.path.isfile("hangman.data"):
+        try:
+            with open("hangman.data") as file:
+                loadingHistory = False
+                for line in file:
+                    line = line.strip()
+
+                    if line == "":
+                        continue
+                    elif line == "==":
+                        loadingHistory = True
+                    elif loadingHistory:
+                        game = line.split(",")
+                        if len(game) == 4:
+                            game[2] = int(game[2])
+                            game[3] = int(game[3])
+                            game_history.append(game)
+                    else:
+                        [name, value] = line.split("=")
+                        if type(options[name]) == bool:
+                            options[name] = value == "True"
+                        else:
+                            options[name] = int(value)
+
+        except:
+            print(ASCII.RED + "Failed to load saved data" + ASCII.RESET)
+        else:
+            print(ASCII.YELLOW + "Loaded saved data" + ASCII.RESET)
+
     main_menu()
+
+    try:
+        with open("hangman.data", "w") as file:
+            for name, value in options.items():
+                file.write(f"{name}={value}\n")
+
+            file.write("==\n")
+
+            for game in game_history:
+                file.write(f"{game[0]},{game[1]},{game[2]},{game[3]}\n")
+
+    except:
+        ...
+
     print("\nThank you for playing")
 
 
