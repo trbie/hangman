@@ -713,7 +713,11 @@ def playGame():
                 elif guesses <= options["Hint Threshold"]:
                     possibleHints = []
                     for letter in word.lower():
-                        if letter not in possibleHints and letter not in guess_history:
+                        if (
+                            letter not in possibleHints
+                            and letter in LETTERS
+                            and letter not in guess_history
+                        ):
                             possibleHints.append(letter)
 
                     guess_history += "?" + random.choice(possibleHints)
