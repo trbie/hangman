@@ -329,8 +329,10 @@ def print_game_details(game):
     print("\n" + numberLine)
     print(guessLine)
 
-    print(f"\nGuesses Used: {ASCII.RED}{guesses_used}{ASCII.RESET}/{total_guesses}")
-    print(f"Hints Used: {ASCII.YELLOW}{hints_used}{ASCII.RESET}/{total_hints}")
+    print(
+        f"\nIncorrect guesses: {ASCII.RED}{guesses_used}{ASCII.RESET}/{total_guesses}"
+    )
+    print(f"Hints used: {ASCII.YELLOW}{hints_used}{ASCII.RESET}/{total_hints}")
 
 
 def create_menu(choices):
@@ -606,7 +608,7 @@ def history_menu():
 
         # Show game stats
         print(f"\nGames won: {ASCII.GREEN}{wins}{ASCII.RESET}/{len(game_history)}")
-        print(f"Total guesses used: {ASCII.RED}{total_guesses_used}{ASCII.RESET}")
+        print(f"Total incorrect guesses: {ASCII.RED}{total_guesses_used}{ASCII.RESET}")
         print(f"Total hints used: {ASCII.YELLOW}{total_hints_used}{ASCII.RESET}")
 
         print()
@@ -801,7 +803,9 @@ def playGame():
 
         # If the game is still going, ask for a guess
         if not won and guesses > 0:
-            print(f"You have {guesses} {singPlur('guess', guesses, 'es')} left")
+            print(
+                f"You have {guesses} incorrect {singPlur('guess', guesses, 'es')} left"
+            )
 
             # If hints can be used, show how many hints are left
             if guesses <= options["Hint Threshold"] and hints > 0:
@@ -864,7 +868,7 @@ def playGame():
     # Print win/loss message
     if won:
         print(
-            f"You {ASCII.GREEN}won{ASCII.RESET} with {options['Guesses'] - guesses} {singPlur('guess', options['Guesses'] - guesses, 'es')} and {options['Hints'] - hints} {singPlur('hint', options['Hints'] - hints)}"
+            f"You {ASCII.GREEN}won{ASCII.RESET} with {options['Guesses'] - guesses} incorrect {singPlur('guess', options['Guesses'] - guesses, 'es')} and {options['Hints'] - hints} {singPlur('hint', options['Hints'] - hints)}"
         )
         wins += 1
     else:
