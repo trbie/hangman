@@ -159,6 +159,8 @@ options = {
 # 3 - total hints
 game_history = []
 wins = 0
+total_guesses_used = 0
+total_hints_used = 0
 category = ""
 externalCategory = False
 
@@ -602,6 +604,11 @@ def history_menu():
             line += game_summary(game, False)
             print(line)
 
+        # Show game stats
+        print(f"\nGames won: {ASCII.GREEN}{wins}{ASCII.RESET}/{len(game_history)}")
+        print(f"Total guesses used: {ASCII.RED}{total_guesses_used}{ASCII.RESET}")
+        print(f"Total hints used: {ASCII.YELLOW}{total_hints_used}{ASCII.RESET}")
+
         print()
         choice = create_menu(["Show Details", "Show All Details", "Clear All", "Back"])
 
@@ -710,6 +717,8 @@ def play():
 def playGame():
     global game_history
     global wins
+    global total_guesses_used
+    global total_hints_used
 
     # Get random word from selected category
     [word, cat] = getWord()
@@ -864,6 +873,8 @@ def playGame():
 
     # Add game to history
     game_history.append([word, guess_history, options["Guesses"], options["Hints"]])
+    total_guesses_used += options["Guesses"] - guesses
+    total_hints_used += options["Hints"] - hints
 
     # Print the total wins if they are enabled
     if options["Show Wins"]:
@@ -873,6 +884,9 @@ def playGame():
 def main():
     global game_history
     global options
+    global wins
+    global total_guesses_used
+    global total_hints_used
 
     # Clear screen to fix ascii color errors on older terminals
     clearScreen()
@@ -898,6 +912,23 @@ def main():
                             game[2] = int(game[2])
                             game[3] = int(game[3])
                             game_history.append(game)
+
+                            word = game[0].lower()
+                            for letter in word:
+                                if letter not in LETTERS:
+                                    word = word.replace(letter, "")
+
+                            # Keep track of games stats from saved data
+                            for letter in game[1]:
+                                if letter == "?":
+                                    total_hints_used += 1
+                                elif letter in word:
+                                    word = word.replace(letter, "")
+                                else:
+                                    total_guesses_used += 1
+
+                            if len(word) == 0:
+                                wins += 1
                     # Load option
                     else:
                         [name, value] = line.split("=")
